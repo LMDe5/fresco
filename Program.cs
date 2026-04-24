@@ -21,9 +21,10 @@ namespace battleLogs_backgroundSimulation
 
         }
 
-        static void EndGame(GameStatus status, GameLogs logs, GameLogic logic, GameEvents events, GameSaving saving)
+        static void EndGame(GameStatus status, GameLogs logs, GameLogic logic,
+            GameEvents events, GameSaving saving, GameLogic.Winner winner)
         {
-            if (!status.IsPlayerAlive())
+            if (winner.ToString() == "player")
             {
                 Console.WriteLine("Бой закончен. Победил: Противник");
             }
@@ -39,6 +40,8 @@ namespace battleLogs_backgroundSimulation
 
             logs.ClearLog();
             saving.Delete();
+
+            Environment.Exit(0);
         }
         static async Task Game(GameLogs gameLogs, GameSaving saving, Random random)
         {
@@ -83,7 +86,7 @@ namespace battleLogs_backgroundSimulation
             events.RunEventAsync();
             logic.RunCheckingGameOver();
 
-            logic.OnGameOver = () => EndGame(gameStatus, gameLogs, logic, events, saving);
+            logic.OnGameOver = (winner) => EndGame(gameStatus, gameLogs, logic, events, saving, winner);
 
             bool gameContinues = true;
             while (true)
@@ -123,12 +126,12 @@ namespace battleLogs_backgroundSimulation
                         Console.WriteLine("Неизвестная команда. Доступны: attack, heal, stats, exit");
                         break;
                 }
-
             }
 
             saving.Save(gameStatus);
             await logic.StopAsync();
             await events.StopAsync();
+            
         }
 
         static void ShowLogs(GameLogs logs)

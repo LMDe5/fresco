@@ -20,7 +20,8 @@ namespace battleLogs_backgroundSimulation
         private CancellationTokenSource cancelledTokenGameOver;
         private Task gameOverTickTask;
 
-        public Action OnGameOver;
+        public Action<Winner> OnGameOver;
+        public enum Winner { player, enemy };
 
         public GameLogic(GameStatus status, GameLogs gameLogs, GameCasts casts, Random random)
         {
@@ -44,9 +45,14 @@ namespace battleLogs_backgroundSimulation
                 {
                     await Task.Delay(500, cancelledToken.Token);
 
-                    if (!status.IsPlayerAlive() || !status.IsEnemyAlive())
+                    if (!status.IsPlayerAlive())
                     {
-                        OnGameOver.Invoke();
+                        OnGameOver.Invoke(Winner.enemy);
+                        return;
+                    }
+                    else if (!status.IsEnemyAlive())
+                    {
+                        OnGameOver.Invoke(Winner.player);
                         return;
                     }
                 }
